@@ -43,7 +43,7 @@ def main():
 
     # TODO: create a function for this
     try:
-        conn = get_connection(hostname="localhost", db="taxi_trips", username="yeldos")
+        conn = get_connection(hostname="localhost", db="taxi_trips", username="postgres")
     except:
         print("Error in creating a connection.")
         return 1
