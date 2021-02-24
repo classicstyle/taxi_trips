@@ -78,3 +78,13 @@ def get_connection(hostname, db, username, password=None):
             user=username,
             password=password,
         )
+
+
+def json_reader(json_file):
+    import json
+
+    data = {}
+    with open(json_file) as data_file:
+        data = json.load(data_file)
+
+    return data

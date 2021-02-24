@@ -1,0 +1,8 @@
+{
+  "db": {
+    "hostname": "localhost",
+    "db_name": "taxi_trips",
+    "schema": "stage",
+    "username": "postgres"
+  }
+}

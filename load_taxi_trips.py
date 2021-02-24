@@ -8,6 +8,8 @@ from utils import rows_from_a_csv_file
 from utils import str_to_decimal
 from utils import str_to_timestamp
 from utils import get_connection
+from utils import json_reader
+import os
 
 
 @profile
@@ -51,9 +53,28 @@ def main():
     # TODO: read multiple csv files or call this script multiple times with given path to csv
     csv_path_taxi_trips = sys.argv[1]
 
-    # TODO: put in a config file, include db configs
-    db_schema = "stage"
+    dir_root = os.path.dirname(os.path.realpath(__file__))
 
+    # config json
+    config_json_path = os.path.join(dir_root, "config.json")
+    config_json = json_reader(config_json_path)
+
+    if not config_json:
+        print("no config json found or empty {}".format(config_json_path))
+        return 1
+    else:
+        if 'db' not in config_json:
+            print("db config not found or empty")
+            return 1
+
+    # database settings from config
+    db_settings = config_json['db']
+    db_hostname = db_settings['hostname']
+    db_name = db_settings['db_name']
+    db_schema = db_settings['schema']
+    db_username = db_settings['username']
+
+    # TODO: better to store DDLs separately and run before this job
     ddl_taxi_trips = """
             CREATE TABLE IF NOT EXISTS {0}.taxi_trips (    
                 vendor_id               INTEGER,
@@ -81,7 +102,7 @@ def main():
         """.format(db_schema)
 
     try:
-        conn = get_connection(hostname="localhost", db="taxi_trips", username="postgres")
+        conn = get_connection(hostname=db_hostname, db=db_name, username=db_username)
     except:
         print("Error in creating a connection.")
         return 1
@@ -98,7 +119,7 @@ def main():
             # return 1
 
         # Insert the rows from taxi trips csv by reading using generator
-        # TODO: insert only new rows (taxi_type, yyyy-mm)
+        # TODO: insert only new rows (taxi_type, YYYY-MM)
         try:
             insert_taxi_trips(
                 conn,

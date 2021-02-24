@@ -4,8 +4,10 @@ from utils import profile
 from utils import execute_ddl
 from utils import rows_from_a_csv_file
 from utils import get_connection
+from utils import json_reader
 from typing import Iterator
 import sys
+import os
 
 
 @profile
@@ -29,9 +31,28 @@ def main():
     # TODO: check the existence of input file(s)
     csv_path_taxi_zone = sys.argv[1]
 
-    # TODO: put in a config file, include db configs
-    db_schema = "stage"
+    dir_root = os.path.dirname(os.path.realpath(__file__))
 
+    # config json
+    config_json_path = os.path.join(dir_root, "config.json")
+    config_json = json_reader(config_json_path)
+
+    if not config_json:
+        print("no config json found or empty {}".format(config_json_path))
+        return 1
+    else:
+        if 'db' not in config_json:
+            print("db config not found or empty")
+            return 1
+
+    # database settings from config
+    db_settings = config_json['db']
+    db_hostname = db_settings['hostname']
+    db_name = db_settings['db_name']
+    db_schema = db_settings['schema']
+    db_username = db_settings['username']
+
+    # TODO: better to store DDLs separately and run before this job
     ddl_taxi_zone = """
         CREATE TABLE IF NOT EXISTS {0}.taxi_zone (    
             location_id     INTEGER,
@@ -41,9 +62,9 @@ def main():
         );
     """.format(db_schema)
 
-    # TODO: create a function for this
+    # creating a connection to db
     try:
-        conn = get_connection(hostname="localhost", db="taxi_trips", username="postgres")
+        conn = get_connection(hostname=db_hostname, db=db_name, username=db_username)
     except:
         print("Error in creating a connection.")
         return 1
