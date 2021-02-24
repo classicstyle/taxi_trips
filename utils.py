@@ -37,7 +37,7 @@ def rows_from_a_csv_file(filename, skip_first_line=False, dialect='excel', **fmt
     """
     import csv
 
-    with open(filename, 'r') as csv_file:
+    with open(filename, 'r', encoding='utf-8') as csv_file:
         reader = csv.reader(csv_file, dialect, **fmtparams)
         if skip_first_line:
             next(reader, None)
